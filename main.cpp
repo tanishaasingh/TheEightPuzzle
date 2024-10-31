@@ -2,13 +2,21 @@
 #include <string>
 #include <vector>
 #include <algorithm> 
+#include "tree.h"
+#include "node.h"
 
 using namespace std;
+
+void uniformcostsearch( Tree& tree );              // implement search algorithms 
+void ASTARmisplaced( /* tree*/ );                
+void ASTAReuclideandistance( /*tree   */ ); 
+
 
 int main(int argc,char* argv[]){
 
     int userpuzzlechoice; 
     vector<int> gamepuzzle(9); 
+    int algchoice; 
    
 
     cout << "Welcome to tsing038 / 8 puzzle solver" << endl; 
@@ -64,8 +72,23 @@ int main(int argc,char* argv[]){
     }
   
 
+  // PUZZLE SET, CHOOSE ALGORITHM 
+
+    cout << endl; 
+    cout << "Enter your choice of algorithm" << endl; 
+    cout << "1. Uniform Cost Search" << endl; 
+    cout << "2. A* with the Misplaced Tile heuristic." << endl; 
+    cout << "3. A* with the Euclidean distance heuristic." << endl; 
+    cout << endl; 
+
+    cin >> algchoice; 
+
     
     
     
     return 0;
 }
+
+void uniformcostsearch( Tree& tree ) {
+    
+} 
