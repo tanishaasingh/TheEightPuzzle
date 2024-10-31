@@ -11,23 +11,38 @@ void uniformcostsearch( Tree& tree );              // implement search algorithm
 void ASTARmisplaced( Tree& tree);                
 void ASTAReuclideandistance( Tree& tree ); 
 
-vector<vector<int>> get_successors(const vector<int>& state) {
-    vector<vector<int>> successors;
-    int zeroPos = find(state.begin(), state.end(), 0) - state.begin();
-    int row = zeroPos / 3, col = zeroPos % 3;
+vector <vector<int> > operatorMoves( const vector<int>& curstate ) {           //operator 
 
-    // Possible moves: up, down, left, right
-    vector<pair<int, int>> moves = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-    for (const auto& move : moves) {
-        int newRow = row + move.first;
-        int newCol = col + move.second;
-        if (newRow >= 0 && newRow < 3 && newCol >= 0 && newCol < 3) {
-            vector<int> newState = state;
-            swap(newState[zeroPos], newState[newRow * 3 + newCol]);
-            successors.push_back(newState);
+    vector<vector<int>> nextNode;
+    vector<pair<int, int>> OP = {
+        {-1, 0}, 
+        {1, 0}, 
+        {0, -1}, 
+        {0, 1}                  };
+
+    int blank = find(curstate.begin(), curstate.end(), 0) - curstate.begin();
+
+    int prow = blank / 3, pcolumn = blank % 3;
+
+    
+    for (size_t i = 0; i < OP.size(); ++i) {
+        
+        int targetrow = prow + OP[i].first;                   // access nodes using index 
+        int targetcolumn = pcolumn + OP[i].second;
+
+        if (targetrow >= 0 && targetcolumn >= 0 && targetrow < 3 && targetcolumn < 3) {
+
+            vector<int> nextinline = curstate;
+            int targetIndex = targetrow * 3 + targetcolumn;
+
+            nextinline[blank] = nextinline[targetIndex];
+            nextinline[targetIndex] = 0;
+               //swap(nextinline[blank], nextinline[targetrow * 3 + targetcolumn]);
+            nextNode.push_back(nextinline);
+
         }
     }
-    return successors;
+    return nextNode;
 }
 
 int main(int argc,char* argv[]){
@@ -43,9 +58,9 @@ int main(int argc,char* argv[]){
 
     cin >> userpuzzlechoice; 
 
-    if (userpuzzlechoice == 1) {         // USER CHOOSES DEFAULT
+    if (userpuzzlechoice == 1) {                  // USER CHOOSES DEFAULT
         
-       gamepuzzle = {0,1,2,4,5,3,7,8,6};     // GAMEPUZZLE now contains the default val
+       gamepuzzle = {0,1,2,4,5,3,7,8,6};          // GAMEPUZZLE now contains the default val
         
         cout << "Your puzzle set: ";              // display puzzle set 
             for (int i = 0; i < 9; ++i) {
@@ -55,7 +70,7 @@ int main(int argc,char* argv[]){
 
     }
 
-    else if (userpuzzlechoice == 2) {    // USER CHOOSES TO MAKE PUZZLE 
+    else if (userpuzzlechoice == 2) {             // USER CHOOSES TO MAKE PUZZLE 
 
         cout << "Enter your puzzle, use a zero to represent the blank." << endl;
 
@@ -102,24 +117,24 @@ int main(int argc,char* argv[]){
     cin >> algchoice; 
 
     if (algchoice == 1) {
-        Tree tree(gamepuzzle, {1, 2, 3, 4, 5, 6, 7, 8, 0}); // Example goal state
+        Tree tree(gamepuzzle, {1, 2, 3, 4, 5, 6, 7, 8, 0}); // goal state within function call
         uniformcostsearch(tree);
     } 
     else if (algchoice == 2) {
-        Tree tree(gamepuzzle, {1, 2, 3, 4, 5, 6, 7, 8, 0}); // Example goal state
+        Tree tree(gamepuzzle, {1, 2, 3, 4, 5, 6, 7, 8, 0}); 
         ASTARmisplaced(tree);
     }  
     else if (algchoice == 3) {
-        Tree tree(gamepuzzle, {1, 2, 3, 4, 5, 6, 7, 8, 0}); // Example goal state
+        Tree tree(gamepuzzle, {1, 2, 3, 4, 5, 6, 7, 8, 0}); 
         ASTAReuclideandistance(tree);
     }  
 
 
     
-    
-    
     return 0;
 }
+
+// search algorithm implementation 
 
 void uniformcostsearch(Tree& tree) {
     // Priority queue for the frontier, using a custom comparator
@@ -138,7 +153,9 @@ void uniformcostsearch(Tree& tree) {
 
         // Check if the current node is the goal
         if (current->isGoal(tree.goalState)) {
-            cout << "Goal reached!" << endl;
+            cout << endl; 
+            cout << "Goal!!!" << endl;
+            cout << endl; 
             // Backtrack to print the solution if needed
             vector<Node*> path;
             for (Node* node = current; node != nullptr; node = node->parent) {
@@ -159,7 +176,7 @@ void uniformcostsearch(Tree& tree) {
         if (explored.find(state_key) != explored.end()) continue;
         explored.insert(state_key);
 
-        vector<vector<int>> successors = get_successors(current->state);
+        vector<vector<int>> successors = operatorMoves(current->state);
         for (const auto& succ : successors) {
             Node* nextNode = new Node(succ, current);
             nextNode->g = current->g + 1; // Increment cost
@@ -189,7 +206,9 @@ void ASTARmisplaced(Tree& tree) {
 
         // Check if the current node is the goal
         if (current->isGoal(tree.goalState)) {
-            cout << "Goal reached!" << endl;
+            cout << endl; 
+            cout << "Goal!!!" << endl;
+            cout << endl;
             // Backtrack to print the solution if needed
             vector<Node*> path;
             for (Node* node = current; node != nullptr; node = node->parent) {
@@ -210,7 +229,7 @@ void ASTARmisplaced(Tree& tree) {
         if (explored.find(state_key) != explored.end()) continue;
         explored.insert(state_key);
 
-        vector<vector<int>> successors = get_successors(current->state);
+        vector<vector<int>> successors = operatorMoves(current->state);
         for (const auto& succ : successors) {
             Node* nextNode = new Node(succ, current);
             nextNode->g = current->g + 1; // Increment cost
@@ -226,13 +245,13 @@ void ASTARmisplaced(Tree& tree) {
 
 
 void ASTAReuclideandistance( Tree& tree ) {
-    auto cmp = [](Node* a, Node* b) { return a->f > b->f; };
+  auto cmp = [](Node* a, Node* b) { return a->f > b->f; };
     priority_queue<Node*, vector<Node*>, decltype(cmp)> frontier(cmp);
     unordered_set<string> explored;
 
     Node* startNode = new Node(tree.initialState);
-    startNode->g = 0;  // Cost from the initial node
-    startNode->euclideanDistance(tree.goalState); // Calculate h for start node
+    startNode->g = 0;
+    startNode->euclideanDistance(tree.goalState);
     frontier.push(startNode);
 
     int nodesExpanded = 0;
@@ -243,7 +262,9 @@ void ASTAReuclideandistance( Tree& tree ) {
 
         // Check if the current node is the goal
         if (current->isGoal(tree.goalState)) {
+            cout << endl; 
             cout << "Goal!!!" << endl;
+            cout << endl; 
             cout << "To solve this problem the search algorithm expanded a total of " << nodesExpanded << " nodes." << endl;
 
             // Backtrack to print the solution
@@ -277,13 +298,13 @@ void ASTAReuclideandistance( Tree& tree ) {
         nodesExpanded++;
 
         // Print the current node's g(n) and h(n)
-        cout << "Expanding state with g(n) = " << current->g << " and h(n) = " << current->h << ": ";
+        cout << "The best state to expand with g(n) = " << current->g << " and h(n) = " << current->h << ": " << endl;
         for (int val : current->state) {
             cout << val << " ";
         }
         cout << endl;
 
-        vector<vector<int>> successors = get_successors(current->state);
+        vector<vector<int>> successors = operatorMoves(current->state);
         for (const auto& succ : successors) {
             Node* nextNode = new Node(succ, current);
             nextNode->g = current->g + 1; // Increment cost
@@ -299,4 +320,4 @@ void ASTAReuclideandistance( Tree& tree ) {
         delete current; // Free memory of the current node
     }
     cout << "No solution found." << endl;
-    }
+}
