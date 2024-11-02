@@ -134,88 +134,115 @@ int main(int argc,char* argv[]){
     return 0;
 }
 
+struct nodecomp {
+
+    bool operator()(Node* a, Node* b) const {
+
+        return a->f > b->f; 
+
+    }
+};
+
 // search algorithm implementation 
 
 void uniformcostsearch(Tree& tree) {
-    // Priority queue for the frontier, using a custom comparator
-    auto cmp = [](Node* a, Node* b) { return a->f > b->f; };
-    priority_queue<Node*, vector<Node*>, decltype(cmp)> frontier(cmp);
-    unordered_set<string> explored;
 
-    Node* startNode = new Node(tree.initialState);
-    startNode->g = 0;  // Cost from the initial node
-    startNode->misplacedTiles(tree.goalState); // Calculate h for start node
-    frontier.push(startNode);
+    unordered_set<string> expanded;
+    priority_queue <Node*, vector<Node*>, nodecomp> frontier; 
+    
+
+    Node* begnode = new Node(tree.initialState);
+
+    begnode->g = 0;  
+
+    begnode->misplacedTiles(tree.goalState); 
+
+    frontier.push(begnode);
 
     while (!frontier.empty()) {
-        Node* current = frontier.top();
+
+        Node* curnode = frontier.top();
         frontier.pop();
 
-        // Check if the current node is the goal
-        if (current->isGoal(tree.goalState)) {
+        if (curnode->isGoal(tree.goalState)) {
+            vector<Node*> nodevals;
             cout << endl; 
             cout << "Goal!!!" << endl;
             cout << endl; 
-            // Backtrack to print the solution if needed
-            vector<Node*> path;
-            for (Node* node = current; node != nullptr; node = node->parent) {
-                path.push_back(node);
+            
+            
+            for (Node* node = curnode; node != nullptr; node = node->parent) {
+
+                nodevals.push_back(node);
+
             }
-            reverse(path.begin(), path.end());
-            for (const auto& node : path) {
+            reverse(nodevals.begin(), nodevals.end());
+
+            for (const auto& node : nodevals) {
+
                 for (int val : node->state) {
                     cout << val << " ";
                 }
                 cout << endl;
+
             }
             return;
+
         }
 
-        string state_key = current->stringState();
+        string state = curnode->stringState();
 
-        if (explored.find(state_key) != explored.end()) continue;
-        explored.insert(state_key);
+        if (expanded.find(state) != expanded.end()) continue;
 
-        vector<vector<int>> successors = operatorMoves(current->state);
-        for (const auto& succ : successors) {
-            Node* nextNode = new Node(succ, current);
-            nextNode->g = current->g + 1; // Increment cost
-            nextNode->misplacedTiles(tree.goalState); // Calculate h
+        expanded.insert(state);
 
-            if (explored.find(nextNode->stringState()) == explored.end()) {
-                frontier.push(nextNode);
-            }
+        vector<vector<int>> inLine = operatorMoves(curnode->state);
+        
+        for (size_t i = 0; i < inLine.size(); ++i) {
+            vector<int> succ = inLine[i]; 
+            Node* nextNode = new Node(succ, curnode);
+            nextNode->g = curnode->g + 1; 
+            nextNode->misplacedTiles(tree.goalState); 
+
+    if (expanded.find(nextNode->stringState()) == expanded.end()) {
+        frontier.push(nextNode);
+    }
         }
     }
     cout << "No solution found." << endl;
 }
 
 void ASTARmisplaced(Tree& tree) {
-   auto cmp = [](Node* a, Node* b) { return a->f > b->f; };
-    priority_queue<Node*, vector<Node*>, decltype(cmp)> frontier(cmp);
-    unordered_set<string> explored;
 
-    Node* startNode = new Node(tree.initialState);
-    startNode->g = 0;  // Cost from the initial node
-    startNode->misplacedTiles(tree.goalState); // Calculate h for start node
-    frontier.push(startNode);
+    unordered_set<string> expanded;
+    priority_queue<Node*, vector<Node*>, nodecomp> frontier; 
+    
+
+    Node* begnode = new Node(tree.initialState);
+    begnode->g = 0;  
+    begnode->misplacedTiles(tree.goalState); 
+    frontier.push(begnode);
 
     while (!frontier.empty()) {
-        Node* current = frontier.top();
+        Node* curnode = frontier.top();
         frontier.pop();
 
-        // Check if the current node is the goal
-        if (current->isGoal(tree.goalState)) {
+        
+        if (curnode->isGoal(tree.goalState)) {
+
             cout << endl; 
             cout << "Goal!!!" << endl;
             cout << endl;
-            // Backtrack to print the solution if needed
-            vector<Node*> path;
-            for (Node* node = current; node != nullptr; node = node->parent) {
-                path.push_back(node);
+          
+            vector<Node*> nodevals;
+            for (Node* node = curnode; node != nullptr; node = node->parent) {
+
+                nodevals.push_back(node);
+
             }
-            reverse(path.begin(), path.end());
-            for (const auto& node : path) {
+            reverse(nodevals.begin(), nodevals.end());
+
+            for (const auto& node : nodevals) {
                 for (int val : node->state) {
                     cout << val << " ";
                 }
@@ -224,35 +251,43 @@ void ASTARmisplaced(Tree& tree) {
             return;
         }
 
-        string state_key = current->stringState();
+        string statek = curnode->stringState();
 
-        if (explored.find(state_key) != explored.end()) continue;
-        explored.insert(state_key);
+        if (expanded.find(statek) != expanded.end()) continue;
+        expanded.insert(statek);
 
-        vector<vector<int>> successors = operatorMoves(current->state);
-        for (const auto& succ : successors) {
-            Node* nextNode = new Node(succ, current);
-            nextNode->g = current->g + 1; // Increment cost
-            nextNode->misplacedTiles(tree.goalState); // Calculate h
+        vector<vector<int>> inLine = operatorMoves(curnode->state);
+         for (size_t i = 0; i < inLine.size(); ++i) {
+            vector<int> succ = inLine[i]; 
+            Node* nextNode = new Node(succ, curnode);
+            nextNode->g = curnode->g + 1; 
+            nextNode->misplacedTiles(tree.goalState); 
 
-            if (explored.find(nextNode->stringState()) == explored.end()) {
+            if (expanded.find(nextNode->stringState()) == expanded.end()) {
                 frontier.push(nextNode);
             }
         }
     }
+
+
     cout << "No solution found." << endl;
 }
 
 
 void ASTAReuclideandistance( Tree& tree ) {
-  auto cmp = [](Node* a, Node* b) { return a->f > b->f; };
-    priority_queue<Node*, vector<Node*>, decltype(cmp)> frontier(cmp);
-    unordered_set<string> explored;
 
-    Node* startNode = new Node(tree.initialState);
-    startNode->g = 0;
-    startNode->euclideanDistance(tree.goalState);
-    frontier.push(startNode);
+    priority_queue<Node*, vector<Node*>, nodecomp> frontier; 
+    unordered_set<string> expanded;
+
+    Node* begnode = new Node(tree.initialState);
+
+    begnode->g = 0;
+
+    begnode->euclideanDistance(tree.goalState);
+
+
+
+    frontier.push(begnode);
 
     int nodesExpanded = 0;
 
@@ -260,64 +295,67 @@ void ASTAReuclideandistance( Tree& tree ) {
         Node* current = frontier.top();
         frontier.pop();
 
-        // Check if the current node is the goal
         if (current->isGoal(tree.goalState)) {
             cout << endl; 
             cout << "Goal!!!" << endl;
             cout << endl; 
             cout << "To solve this problem the search algorithm expanded a total of " << nodesExpanded << " nodes." << endl;
 
-            // Backtrack to print the solution
-            vector<Node*> path;
+            
+            vector<Node*> nodevals;
             for (Node* node = current; node != nullptr; node = node->parent) {
-                path.push_back(node);
+                nodevals.push_back(node);
             }
-            reverse(path.begin(), path.end());
-            for (const auto& node : path) {
+            reverse(nodevals.begin(), nodevals.end());
+            for (const auto& node : nodevals) {
                 for (int val : node->state) {
                     cout << val << " ";
                 }
                 cout << endl;
             }
 
-            // Free all nodes in the path
-            for (Node* node : path) {
+    
+            for (Node* node : nodevals) {
                 delete node;
             }
             return;
         }
 
-        // Check if the state has already been explored
-        string state_key = current->stringState();
-        if (explored.find(state_key) != explored.end()) {
-            delete current; // Free memory of the current node
-            continue;
+        
+        string statek = current->stringState();
+        if (expanded.find(statek) != expanded.end()) {
+            delete current; 
         }
 
-        explored.insert(state_key);
+        expanded.insert(statek);
         nodesExpanded++;
 
-        // Print the current node's g(n) and h(n)
+     
         cout << "The best state to expand with g(n) = " << current->g << " and h(n) = " << current->h << ": " << endl;
         for (int val : current->state) {
             cout << val << " ";
+
         }
+
         cout << endl;
 
-        vector<vector<int>> successors = operatorMoves(current->state);
-        for (const auto& succ : successors) {
+        vector<vector<int>> inLine = operatorMoves(current->state);
+        
+        for (const auto& succ : inLine) {
             Node* nextNode = new Node(succ, current);
-            nextNode->g = current->g + 1; // Increment cost
-            nextNode->euclideanDistance(tree.goalState); // Calculate h
+            nextNode->g = current->g + 1;
+            nextNode->euclideanDistance(tree.goalState); 
 
-            // Check if this state is already explored
-            if (explored.find(nextNode->stringState()) == explored.end()) {
+           
+
+            if (expanded.find(nextNode->stringState()) == expanded.end()) {
                 frontier.push(nextNode);
             } else {
-                delete nextNode; // Free memory if the state has already been explored
+                delete nextNode; 
             }
         }
-        delete current; // Free memory of the current node
+        delete current; 
+        
     }
     cout << "No solution found." << endl;
 }
